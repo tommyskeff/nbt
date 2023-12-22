@@ -4,3 +4,4 @@ target/
 build/
 src/test
 *.nbt
+*.dat
