@@ -8,6 +8,7 @@ GZIPInputStream gis = new GZIPInputStream(stream);
 Tag tag = Nbt.getApi().read(gis);
 System.out.println(tag);
 ```
+
 ```java
 CompoundTag tag = new CompoundTag("A",
     new IntTag("B", 4),
@@ -20,4 +21,10 @@ CompoundTag tag = new CompoundTag("A",
 
 byte[] binData = Nbt.getApi().serialize(tag);
 System.out.println(Arrays.toString(binData));
+```
+
+```java
+byte[] data = ...
+CompoundTag t1 = (CompoundTag) Nbt.getApi().deserialize(data);
+System.out.println(t1.getInt("MyIntegerField"));
 ```
