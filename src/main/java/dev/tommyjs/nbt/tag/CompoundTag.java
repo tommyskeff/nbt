@@ -1,5 +1,6 @@
 package dev.tommyjs.nbt.tag;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,10 @@ public class CompoundTag extends NamedTag<List<NamedTag<?>>> {
 
     public CompoundTag(String name, List<NamedTag<?>> value) {
         super(name, value);
+    }
+
+    public CompoundTag(String name, NamedTag<?>  ...values) {
+        this(name, Arrays.asList(values));
     }
 
     private void ensureIndexed() {

@@ -15,6 +15,10 @@ public class ListTag<T extends Tag> extends NamedTag<List<T>> implements List<T>
         super(name, value);
     }
 
+    public ListTag(String name, T ...values) {
+        this(name, Arrays.asList(values));
+    }
+
     @Override
     public int size() {
         return getValue().size();
