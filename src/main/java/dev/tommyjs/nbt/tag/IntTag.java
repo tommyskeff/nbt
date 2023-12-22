@@ -6,4 +6,8 @@ public class IntTag extends NamedTag<Integer> {
         super(name, value);
     }
 
+    public IntTag(int value) {
+        super(null, value);
+    }
+
 }

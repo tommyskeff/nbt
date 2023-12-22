@@ -6,4 +6,8 @@ public class LongTag extends NamedTag<Long> {
         super(name, value);
     }
 
+    public LongTag(long value) {
+        this(null, value);
+    }
+
 }

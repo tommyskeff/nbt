@@ -6,4 +6,8 @@ public class ShortTag extends NamedTag<Short> {
         super(name, value);
     }
 
+    public ShortTag(short value) {
+        this(null, value);
+    }
+
 }

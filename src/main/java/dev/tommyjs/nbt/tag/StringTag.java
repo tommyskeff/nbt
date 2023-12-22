@@ -6,4 +6,8 @@ public class StringTag extends NamedTag<String> {
         super(name, value);
     }
 
+    public StringTag(String value) {
+        this(null, value);
+    }
+
 }

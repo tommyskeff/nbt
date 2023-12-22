@@ -6,4 +6,8 @@ public class DoubleTag extends NamedTag<Double> {
         super(name, value);
     }
 
+    public DoubleTag(double value) {
+        super(null, value);
+    }
+
 }

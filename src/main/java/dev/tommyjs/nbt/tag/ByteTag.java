@@ -6,4 +6,8 @@ public class ByteTag extends NamedTag<Byte> {
         super(name, value);
     }
 
+    public ByteTag(byte value) {
+        super(null, value);
+    }
+
 }

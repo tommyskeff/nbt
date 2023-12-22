@@ -6,4 +6,8 @@ public class FloatTag extends NamedTag<Float> {
         super(name, value);
     }
 
+    public FloatTag(float value) {
+        super(null, value);
+    }
+
 }
