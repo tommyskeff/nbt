@@ -5,3 +5,4 @@ build/
 src/test
 *.nbt
 *.dat
+src/main/java/dev/tommyjs/nbt/Test.java

@@ -1,6 +1,6 @@
 package dev.tommyjs.nbt.serializer;
 
-import dev.tommyjs.nbt.NbtAPI;
+import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.LongArrayTag;
 
 import java.io.DataInput;
@@ -10,7 +10,7 @@ import java.io.IOException;
 public class LongArraySerializer extends NamedTagSerializer<long[], LongArrayTag> {
 
     @Override
-    public void serialize0(long[] data, DataOutput stream, NbtAPI api) throws IOException {
+    public void serialize0(long[] data, DataOutput stream, TagRegistry registry) throws IOException {
         stream.writeInt(data.length);
         for (long d : data) {
             stream.writeLong(d);
@@ -18,7 +18,7 @@ public class LongArraySerializer extends NamedTagSerializer<long[], LongArrayTag
     }
 
     @Override
-    public LongArrayTag deserialize0(String name, DataInput stream, NbtAPI api) throws IOException {
+    public LongArrayTag deserialize0(String name, DataInput stream, TagRegistry registry) throws IOException {
         int len = stream.readInt();
         long[] data = new long[len];
 

@@ -1,8 +1,7 @@
 package dev.tommyjs.nbt;
 
-import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.CompoundTag;
-import dev.tommyjs.nbt.tag.Tag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,18 +10,16 @@ import java.io.OutputStream;
 
 public interface NbtAPI {
 
-    byte[] serialize(Tag tag) throws IOException;
+    byte[] serialize(@NotNull CompoundTag tag) throws IOException;
 
-    void write(Tag tag, OutputStream stream) throws IOException;
+    void write(@NotNull CompoundTag tag, @NotNull OutputStream stream) throws IOException;
 
-    void write(Tag tag, File file) throws IOException;
+    void write(@NotNull CompoundTag tag, @NotNull File file) throws IOException;
 
-    CompoundTag deserialize(byte[] data) throws IOException;
+    @NotNull CompoundTag deserialize(byte[] data) throws IOException;
 
-    CompoundTag read(InputStream stream) throws IOException;
+    @NotNull CompoundTag read(@NotNull InputStream stream) throws IOException;
 
-    CompoundTag read(File file) throws IOException;
-
-    TagRegistry getRegistry();
+    @NotNull CompoundTag read(@NotNull File file) throws IOException;
 
 }

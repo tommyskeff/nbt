@@ -1,6 +1,6 @@
 package dev.tommyjs.nbt;
 
-import dev.tommyjs.nbt.impl.SimpleNbt;
+import dev.tommyjs.nbt.impl.NbtImpl;
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.serializer.*;
 import dev.tommyjs.nbt.tag.*;
@@ -23,7 +23,7 @@ public class Nbt {
         .withTag(11, IntArrayTag.class, new IntArraySerializer())
         .withTag(12, LongArrayTag.class, new LongArraySerializer());
 
-    private static final NbtAPI API = new SimpleNbt(DEFAULT_REGISTRY);
+    private static final NbtAPI API = new NbtImpl(DEFAULT_REGISTRY);
 
     public static @NotNull NbtAPI getApi() {
         return API;

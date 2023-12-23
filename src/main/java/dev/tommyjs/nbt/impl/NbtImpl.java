@@ -6,26 +6,27 @@ import dev.tommyjs.nbt.serializer.TagSerializer;
 import dev.tommyjs.nbt.tag.CompoundTag;
 import dev.tommyjs.nbt.tag.NamedTag;
 import dev.tommyjs.nbt.tag.Tag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 
-public class SimpleNbt implements NbtAPI {
+public class NbtImpl implements NbtAPI {
 
     private final TagRegistry registry;
 
-    public SimpleNbt(TagRegistry registry) {
+    public NbtImpl(TagRegistry registry) {
         this.registry = registry;
     }
 
     @Override
-    public byte[] serialize(Tag tag) throws IOException {
+    public byte[] serialize(@NotNull CompoundTag tag) throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         write(tag, stream);
         return stream.toByteArray();
     }
 
     @Override
-    public void write(Tag tag, OutputStream stream1) throws IOException {
+    public void write(@NotNull CompoundTag  tag, @NotNull OutputStream stream1) throws IOException {
         DataOutputStream stream = new DataOutputStream(stream1);
         Class<?> clazz = tag.getClass();
 
@@ -44,25 +45,25 @@ public class SimpleNbt implements NbtAPI {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Tag> void write0(Tag tag, TagSerializer<T> serializer, DataOutputStream stream) throws IOException {
-        serializer.serialize((T) tag, stream, this, true);
+    private <T extends Tag> void write0(CompoundTag tag, TagSerializer<T> serializer, DataOutputStream stream) throws IOException {
+        serializer.serialize((T) tag, stream, registry, true);
     }
 
     @Override
-    public void write(Tag tag, File file) throws IOException {
+    public void write(@NotNull CompoundTag tag, @NotNull File file) throws IOException {
         try (FileOutputStream stream = new FileOutputStream(file)) {
             write(tag, stream);
         }
     }
 
     @Override
-    public CompoundTag deserialize(byte[] data) throws IOException {
+    public @NotNull CompoundTag deserialize(byte[] data) throws IOException {
         ByteArrayInputStream stream = new ByteArrayInputStream(data);
         return read(stream);
     }
 
     @Override
-    public CompoundTag read(InputStream stream1) throws IOException {
+    public @NotNull CompoundTag read(@NotNull InputStream stream1) throws IOException {
         DataInputStream stream = new DataInputStream(stream1);
         int tagId = stream.read();
 
@@ -71,7 +72,7 @@ public class SimpleNbt implements NbtAPI {
             throw new IOException("Tag deserializer not found in registry for id " + tagId);
         }
 
-        Tag tag = serializer.deserialize(stream, this, true);
+        Tag tag = serializer.deserialize(stream, registry, true);
         if (!(tag instanceof NamedTag)) {
             throw new IOException("Root tag is not named");
         }
@@ -87,15 +88,10 @@ public class SimpleNbt implements NbtAPI {
     }
 
     @Override
-    public CompoundTag read(File file) throws IOException {
+    public @NotNull CompoundTag read(@NotNull File file) throws IOException {
         try (FileInputStream stream = new FileInputStream(file)) {
             return read(stream);
         }
-    }
-
-    @Override
-    public TagRegistry getRegistry() {
-        return registry;
     }
 
 }
