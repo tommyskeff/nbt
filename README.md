@@ -1,6 +1,26 @@
 # NBT
 Simple yet powerful library for serializing and deserializing data in NBT format. 
  
+
+### Dependency
+```xml
+<repositories>
+    <repository>
+        <id>tommyjs-repo</id>
+        <url>https://repo.tommyjs.dev/repository/maven-releases</url>
+    </repository>
+</repositories>
+
+<dependencies>
+    <dependency>
+        <groupId>dev.tommyjs</groupId>
+        <artifactId>nbt</artifactId>
+        <version>1.0.0</version>
+        <scope>compile</scope>
+    </dependency>
+</dependencies>
+```
+
 ### Examples
 ```java
 FileInputStream stream = new FileInputStream("bigtest.nbt");
