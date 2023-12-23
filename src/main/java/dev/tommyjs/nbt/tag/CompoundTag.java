@@ -1,131 +1,196 @@
 package dev.tommyjs.nbt.tag;
 
-import java.util.Arrays;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-public class CompoundTag extends NamedTag<List<NamedTag<?>>> {
+public class CompoundTag extends NamedTag<Map<String, NamedTag<?>>> {
 
-    private Map<String, NamedTag<?>> index;
-
-    public CompoundTag(String name, List<NamedTag<?>> value) {
+    public CompoundTag(@Nullable String name, @NotNull Map<String, NamedTag<?>> value) {
         super(name, value);
     }
 
-    public CompoundTag(String name, NamedTag<?>  ...values) {
-        this(name, Arrays.asList(values));
+    public CompoundTag(@Nullable String name) {
+        this(name, new HashMap<>());
     }
 
-    private void ensureIndexed() {
-        if (index != null) {
-            return;
-        }
-
-        index = new HashMap<>();
-        for (NamedTag<?> tag : getValue()) {
-            // System.out.println(getName() + " " + index);
-            index.put(tag.getName(), tag);
-        }
-    }
-
-    public Object getTag(String name) {
-        ensureIndexed();
-        return index.get(name);
-    }
-
-    public CompoundTag getCompoundTag(String name) {
-        return (CompoundTag) getTag(name);
-    }
-
-    public ByteTag getByteTag(String name) {
-        return (ByteTag) getTag(name);
-    }
-
-    public ShortTag getShortTag(String name) {
-        return (ShortTag) getTag(name);
-    }
-
-    public IntTag getIntTag(String name) {
-        return (IntTag) getTag(name);
-    }
-
-    public LongTag getLongTag(String name) {
-        return (LongTag) getTag(name);
-    }
-
-    public FloatTag getFloatTag(String name) {
-        return (FloatTag) getTag(name);
-    }
-
-    public DoubleTag getDoubleTag(String name) {
-        return (DoubleTag) getTag(name);
-    }
-
-    public ByteArrayTag getByteArrayTag(String name) {
-        return (ByteArrayTag) getTag(name);
-    }
-
-    public StringTag getStringTag(String name) {
-        return (StringTag) getTag(name);
+    public CompoundTag() {
+        this(null);
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Tag> ListTag<T> getListTag(String name) {
-        return (ListTag<T>) getTag(name);
+    public <T> T getTag(@NotNull String name, @NotNull Class<T> clazz) {
+        NamedTag<?> tag = getValue().get(name);
+        if (tag == null) {
+            return null;
+        }
+
+        if (!clazz.isAssignableFrom(tag.getClass())) {
+            throw new IllegalArgumentException("Tag " + name + " is of type " + tag.getClass().getName());
+        }
+
+        return (T) tag;
     }
 
-    public IntArrayTag getIntArrayTag(String name) {
-        return (IntArrayTag) getTag(name);
+    public @NotNull Class<?> getTagType(@NotNull String name) {
+        return containsTag(name) ? getValue().get(name).getClass() : Void.class;
     }
 
-    public LongArrayTag getLongArrayTag(String name) {
-        return (LongArrayTag) getTag(name);
+    public boolean containsTag(@NotNull String name) {
+        return getValue().containsKey(name);
+    }
+    
+    public void setTag(@NotNull String name, @NotNull NamedTag<?> data) {
+        getValue().put(name, data);
     }
 
-    public byte getByte(String name) {
-        return getByteTag(name).getValue();
+    public void remove(@NotNull String name) {
+        getValue().remove(name);
     }
 
-    public short getShort(String name) {
-        return getShortTag(name).getValue();
+    public @NotNull CompoundTag getCompound(String name) {
+        return containsTag(name) ? getTag(name, CompoundTag.class) : new CompoundTag();
     }
 
-    public int getInt(String name) {
-        return getIntTag(name).getValue();
+    public @NotNull ListTag<?> getList(String name) {
+        return containsTag(name) ? getTag(name, ListTag.class) : new ListTag<>();
     }
 
-    public long getLong(String name) {
-        return getLongTag(name).getValue();
+    public @NotNull String getString(String name) {
+        StringTag tag = getTag(name, StringTag.class);
+        return tag != null ? tag.getValue() : "";
     }
 
-    public float getFloat(String name) {
-        return getFloatTag(name).getValue();
+    public byte getByte(@NotNull String name) {
+        ByteTag tag = getTag(name, ByteTag.class);
+        return tag != null ? tag.getValue() : 0;
     }
 
-    public double getDouble(String name) {
-        return getDoubleTag(name).getValue();
+    public short getShort(@NotNull String name) {
+        ShortTag tag = getTag(name, ShortTag.class);
+        return tag != null ? tag.getValue() : 0;
     }
 
-    public byte[] getByteArray(String name) {
-        return getByteArrayTag(name).getValue();
+    public int getInt(@NotNull String name) {
+        IntTag tag = getTag(name, IntTag.class);
+        return tag != null ? tag.getValue() : 0;
     }
 
-    public String getString(String name) {
-        return getStringTag(name).getValue();
+    public long getLong(@NotNull String name) {
+        LongTag tag = getTag(name, LongTag.class);
+        return tag != null ? tag.getValue() : 0;
     }
 
-    public <T extends Tag> List<T> getList(String name) {
-        ListTag<T> lst = getListTag(name);
-        return lst.getValue();
+    public float getFloat(@NotNull String name) {
+        FloatTag tag = getTag(name, FloatTag.class);
+        return tag != null ? tag.getValue() : 0F;
     }
 
-    public int[] getIntArray(String name) {
-        return getIntArrayTag(name).getValue();
+    public double getDouble(@NotNull String name) {
+        DoubleTag tag = getTag(name, DoubleTag.class);
+        return tag != null ? tag.getValue() : 0D;
     }
 
-    public long[] getLongArray(String name) {
-        return getLongArrayTag(name).getValue();
+    public byte[] getByteArray(@NotNull String name) {
+        ByteArrayTag tag = getTag(name, ByteArrayTag.class);
+        return tag != null ? tag.getValue() : new byte[0];
+    }
+
+    public int[] getIntArray(@NotNull String name) {
+        IntArrayTag tag = getTag(name, IntArrayTag.class);
+        return tag != null ? tag.getValue() : new int[0];
+    }
+
+    public long[] getLongArray(@NotNull String name) {
+        LongArrayTag tag = getTag(name, LongArrayTag.class);
+        return tag != null ? tag.getValue() : new long[0];
+    }
+
+    public void setCompound(@NotNull String name, CompoundTag data) {
+        setTag(name, data);
+    }
+
+    public void setList(@NotNull String name, ListTag<?> data) {
+        setTag(name, data);
+    }
+
+    public void setString(@NotNull String name, String data) {
+        setTag(name, new StringTag(name, data));
+    }
+
+    public void setByte(@NotNull String name, byte data) {
+        setTag(name, new ByteTag(name, data));
+    }
+
+    public void setShort(@NotNull String name, short data) {
+        setTag(name, new ShortTag(name, data));
+    }
+
+    public void setInt(@NotNull String name, int data) {
+        setTag(name, new IntTag(name, data));
+    }
+
+    public void setLong(@NotNull String name, long data) {
+        setTag(name, new LongTag(name, data));
+    }
+
+    public void setFloat(@NotNull String name, float data) {
+        setTag(name, new FloatTag(name, data));
+    }
+
+    public void setDouble(@NotNull String name, double data) {
+        setTag(name, new DoubleTag(name, data));
+    }
+
+    public void setByteArray(@NotNull String name, byte[] data) {
+        setTag(name, new ByteArrayTag(name, data));
+    }
+
+    public void setIntArray(@NotNull String name, int[] data) {
+        setTag(name, new IntArrayTag(name, data));
+    }
+
+    public void setLongArray(@NotNull String name, long[] data) {
+        setTag(name, new LongArrayTag(name, data));
+    }
+
+    private String format(boolean showName) {
+        StringBuilder sb = new StringBuilder("CompoundTag{");
+        if (showName) {
+            String name = getName() == null ? "" : getName();
+            sb.append("name='").append(name).append("', {");
+        }
+
+        int i = 0;
+        for (String name : getValue().keySet()) {
+            NamedTag<?> tag = getValue().get(name);
+            String val;
+
+            if (tag instanceof CompoundTag) {
+                val = ((CompoundTag) tag).format(false);
+            } else {
+                val = tag.formatValue();
+            }
+
+            sb.append("'").append(name).append("': ").append(val);
+
+            if (i++ < getValue().size() - 1) {
+                sb.append(", ");
+            }
+        }
+
+        if (showName) {
+            sb.append("}");
+        }
+
+        return sb.toString();
+    }
+
+    @Override
+    public String toString() {
+        return format(true);
     }
 
 }

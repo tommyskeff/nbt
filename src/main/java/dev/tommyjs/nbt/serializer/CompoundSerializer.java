@@ -8,13 +8,16 @@ import dev.tommyjs.nbt.tag.Tag;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class CompoundSerializer extends NamedTagSerializer<List<NamedTag<?>>, CompoundTag> {
+public class CompoundSerializer extends NamedTagSerializer<Map<String, NamedTag<?>>, CompoundTag> {
 
     @Override
-    public void serialize0(List<NamedTag<?>> data, DataOutput stream, NbtAPI api) throws IOException {
-        for (Tag tag : data) {
+    public void serialize0(Map<String, NamedTag<?>> data, DataOutput stream, NbtAPI api) throws IOException {
+        for (String name : data.keySet()) {
+            NamedTag<?> tag = data.get(name);
             write(tag, stream, api);
         }
 
@@ -23,7 +26,7 @@ public class CompoundSerializer extends NamedTagSerializer<List<NamedTag<?>>, Co
 
     @Override
     public CompoundTag deserialize0(String name, DataInput stream, NbtAPI api) throws IOException {
-        List<NamedTag<?>> lst = new ArrayList<>();
+        Map<String, NamedTag<?>> compound = new HashMap<>();
         boolean ended = false;
 
         while (!ended) {
@@ -36,7 +39,7 @@ public class CompoundSerializer extends NamedTagSerializer<List<NamedTag<?>>, Co
 
                 Tag tag = serializer.deserialize(stream, api, true);
                 if (tag instanceof NamedTag<?> nt) {
-                    lst.add(nt);
+                    compound.put(nt.getName(), nt);
                 } else {
                     throw new IOException("Unnamed tag in compound");
                 }
@@ -45,7 +48,7 @@ public class CompoundSerializer extends NamedTagSerializer<List<NamedTag<?>>, Co
             }
         }
 
-        return new CompoundTag(name, lst);
+        return new CompoundTag(name, compound);
     }
 
     private void write(Tag tag, DataOutput stream, NbtAPI api) throws IOException {

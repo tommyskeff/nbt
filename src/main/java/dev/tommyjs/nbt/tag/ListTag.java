@@ -1,6 +1,7 @@
 package dev.tommyjs.nbt.tag;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -11,12 +12,16 @@ import java.util.stream.Stream;
 
 public class ListTag<T extends Tag> extends NamedTag<List<T>> implements List<T> {
 
-    public ListTag(String name, List<T> value) {
+    public ListTag(@Nullable String name, List<T> value) {
         super(name, value);
     }
 
-    public ListTag(String name, T ...values) {
-        this(name, Arrays.asList(values));
+    public ListTag(@Nullable String name) {
+        this(name, new ArrayList<>());
+    }
+
+    public ListTag() {
+        this(null);
     }
 
     @Override

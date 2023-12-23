@@ -12,7 +12,8 @@ public abstract class NamedTagSerializer<K, T extends NamedTag<K>> implements Ta
     @Override
     public void serialize(T tag, DataOutput stream, NbtAPI api, boolean includeNames) throws IOException {
         if (includeNames) {
-            stream.writeUTF(tag.getName());
+            String name = tag.getName() == null ? "" : tag.getName();
+            stream.writeUTF(name);
         }
 
         serialize0(tag.getValue(), stream, api);

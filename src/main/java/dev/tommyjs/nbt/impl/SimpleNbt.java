@@ -3,6 +3,8 @@ package dev.tommyjs.nbt.impl;
 import dev.tommyjs.nbt.NbtAPI;
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.serializer.TagSerializer;
+import dev.tommyjs.nbt.tag.CompoundTag;
+import dev.tommyjs.nbt.tag.NamedTag;
 import dev.tommyjs.nbt.tag.Tag;
 
 import java.io.*;
@@ -54,13 +56,13 @@ public class SimpleNbt implements NbtAPI {
     }
 
     @Override
-    public Tag deserialize(byte[] data) throws IOException {
+    public CompoundTag deserialize(byte[] data) throws IOException {
         ByteArrayInputStream stream = new ByteArrayInputStream(data);
         return read(stream);
     }
 
     @Override
-    public Tag read(InputStream stream1) throws IOException {
+    public CompoundTag read(InputStream stream1) throws IOException {
         DataInputStream stream = new DataInputStream(stream1);
         int tagId = stream.read();
 
@@ -69,11 +71,23 @@ public class SimpleNbt implements NbtAPI {
             throw new IOException("Tag deserializer not found in registry for id " + tagId);
         }
 
-        return serializer.deserialize(stream, this, true);
+        Tag tag = serializer.deserialize(stream, this, true);
+        if (!(tag instanceof NamedTag)) {
+            throw new IOException("Root tag is not named");
+        }
+
+        if (tag instanceof CompoundTag ct) {
+            return ct;
+        }
+
+        CompoundTag ct = new CompoundTag();
+        ct.setTag("root", (NamedTag<?>) tag);
+
+        return ct;
     }
 
     @Override
-    public Tag read(File file) throws IOException {
+    public CompoundTag read(File file) throws IOException {
         try (FileInputStream stream = new FileInputStream(file)) {
             return read(stream);
         }

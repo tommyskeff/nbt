@@ -1,6 +1,7 @@
 package dev.tommyjs.nbt;
 
 import dev.tommyjs.nbt.registry.TagRegistry;
+import dev.tommyjs.nbt.tag.CompoundTag;
 import dev.tommyjs.nbt.tag.Tag;
 
 import java.io.File;
@@ -16,11 +17,11 @@ public interface NbtAPI {
 
     void write(Tag tag, File file) throws IOException;
 
-    Tag deserialize(byte[] data) throws IOException;
+    CompoundTag deserialize(byte[] data) throws IOException;
 
-    Tag read(InputStream stream) throws IOException;
+    CompoundTag read(InputStream stream) throws IOException;
 
-    Tag read(File file) throws IOException;
+    CompoundTag read(File file) throws IOException;
 
     TagRegistry getRegistry();
 

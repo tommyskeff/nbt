@@ -1,16 +1,18 @@
 package dev.tommyjs.nbt.tag;
 
+import org.jetbrains.annotations.Nullable;
+
 public abstract class NamedTag<T> implements Tag {
 
-    private final String name;
+    private final @Nullable String name;
     private final T value;
 
-    public NamedTag(String name, T value) {
+    public NamedTag(@Nullable String name, T value) {
         this.name = name;
         this.value = value;
     }
 
-    public String getName() {
+    public @Nullable String getName() {
         return name;
     }
 
