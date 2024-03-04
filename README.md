@@ -15,7 +15,7 @@ Simple yet powerful library for serializing and deserializing data in NBT format
     <dependency>
         <groupId>dev.tommyjs</groupId>
         <artifactId>nbt</artifactId>
-        <version>1.0.0</version>
+        <version>2.0.1</version>
         <scope>compile</scope>
     </dependency>
 </dependencies>

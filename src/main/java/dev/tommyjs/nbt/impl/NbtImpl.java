@@ -46,7 +46,7 @@ public class NbtImpl implements NbtAPI {
 
     @SuppressWarnings("unchecked")
     private <T extends Tag> void write0(CompoundTag tag, TagSerializer<T> serializer, DataOutputStream stream) throws IOException {
-        serializer.serialize((T) tag, stream, registry, true);
+        serializer.serialize((T) tag, stream, registry, 0);
     }
 
     @Override
@@ -72,19 +72,16 @@ public class NbtImpl implements NbtAPI {
             throw new IOException("Tag deserializer not found in registry for id " + tagId);
         }
 
-        Tag tag = serializer.deserialize(stream, registry, true);
-        if (!(tag instanceof NamedTag)) {
-            throw new IOException("Root tag is not named");
-        }
-
+        Tag tag = serializer.deserialize(stream, registry, 0);
         if (tag instanceof CompoundTag ct) {
             return ct;
+        } else if (tag instanceof NamedTag<?> nt) {
+            CompoundTag ct = new CompoundTag();
+            ct.setTag("", nt);
+            return ct;
+        } else {
+            throw new IOException("Root tag is not named");
         }
-
-        CompoundTag ct = new CompoundTag();
-        ct.setTag("root", (NamedTag<?>) tag);
-
-        return ct;
     }
 
     @Override

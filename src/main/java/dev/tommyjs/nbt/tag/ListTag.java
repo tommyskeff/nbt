@@ -12,16 +12,12 @@ import java.util.stream.Stream;
 
 public class ListTag<T extends Tag> extends NamedTag<List<T>> implements List<T> {
 
-    public ListTag(@Nullable String name, List<T> value) {
-        super(name, value);
-    }
-
-    public ListTag(@Nullable String name) {
-        this(name, new ArrayList<>());
+    public ListTag(@NotNull List<T> value) {
+        super(value);
     }
 
     public ListTag() {
-        this(null);
+        this(new ArrayList<>());
     }
 
     @Override

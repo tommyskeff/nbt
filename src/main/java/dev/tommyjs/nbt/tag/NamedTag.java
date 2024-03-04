@@ -1,35 +1,22 @@
 package dev.tommyjs.nbt.tag;
 
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
-public abstract class NamedTag<T> implements Tag {
+public class NamedTag<T> implements Tag {
 
-    private final @Nullable String name;
-    private final T value;
+    private final @NotNull T value;
 
-    public NamedTag(@Nullable String name, T value) {
-        this.name = name;
+    public NamedTag(@NotNull T value) {
         this.value = value;
     }
 
-    public @Nullable String getName() {
-        return name;
-    }
-
-    public T getValue() {
+    public @NotNull T getValue() {
         return value;
-    }
-
-    public String formatValue() {
-        return value.toString();
     }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + (name == null ?
-            "{" + formatValue() + "}" :
-            "{" + "name='" + name + '\'' + ", value=" + formatValue() + "}"
-        );
+        return value.toString();
     }
 
 }

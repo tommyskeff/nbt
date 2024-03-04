@@ -2,22 +2,23 @@ package dev.tommyjs.nbt.serializer;
 
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.IntTag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class IntSerializer extends NamedTagSerializer<Integer, IntTag> {
+public class IntSerializer implements TagSerializer<IntTag> {
 
     @Override
-    public void serialize0(Integer data, DataOutput stream, TagRegistry registry) throws IOException {
-        stream.writeInt(data);
+    public void serialize(@NotNull IntTag tag, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+        stream.writeInt(tag.getValue());
     }
 
     @Override
-    public IntTag deserialize0(String name, DataInput stream, TagRegistry registry) throws IOException {
+    public @NotNull IntTag deserialize(@NotNull DataInput stream, @NotNull TagRegistry registry, int depth) throws IOException {
         int data = stream.readInt();
-        return new IntTag(name, data);
+        return new IntTag(data);
     }
 
 }

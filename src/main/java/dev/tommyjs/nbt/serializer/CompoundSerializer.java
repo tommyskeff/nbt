@@ -1,56 +1,73 @@
 package dev.tommyjs.nbt.serializer;
 
-import dev.tommyjs.nbt.NbtAPI;
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.CompoundTag;
 import dev.tommyjs.nbt.tag.EndTag;
 import dev.tommyjs.nbt.tag.NamedTag;
 import dev.tommyjs.nbt.tag.Tag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CompoundSerializer extends NamedTagSerializer<Map<String, NamedTag<?>>, CompoundTag> {
+public class CompoundSerializer implements TagSerializer<CompoundTag> {
 
     @Override
-    public void serialize0(Map<String, NamedTag<?>> data, DataOutput stream, TagRegistry registry) throws IOException {
-        for (String name : data.keySet()) {
-            NamedTag<?> tag = data.get(name);
-            write(tag, stream, registry);
+    public void serialize(@NotNull CompoundTag tag, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+        if (depth == 0) {
+            stream.writeUTF("");
         }
 
-        write(new EndTag(), stream, registry);
+        for (String name : tag.getValue().keySet()) {
+            NamedTag<?> nt = tag.getValue().get(name);
+            write(name, nt, stream, registry, depth + 1);
+        }
+
+        write(null, new EndTag(), stream, registry, depth + 1);
     }
 
     @Override
-    public CompoundTag deserialize0(String name, DataInput stream, TagRegistry registry) throws IOException {
-        Map<String, NamedTag<?>> compound = new HashMap<>();
-        boolean ended = false;
+    public @NotNull CompoundTag deserialize(@NotNull DataInput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+        String name = null;
+        if (depth < 1) {
+            name = stream.readUTF();
+        }
 
+        Map<String, NamedTag<?>> compound = new HashMap<>();
+
+        boolean ended = false;
         while (!ended) {
             int tagId = stream.readByte();
             if (tagId > 0) {
+                String subName = stream.readUTF();
+
                 TagSerializer<?> serializer = registry.getDeserializer(tagId);
                 if (serializer == null) {
                     throw new IOException("Tag deserializer not found in registry for id " + tagId);
                 }
 
-                Tag tag = serializer.deserialize(stream, registry, true);
+                Tag tag = serializer.deserialize(stream, registry, depth + 1);
                 if (tag instanceof NamedTag<?> nt) {
-                    compound.put(nt.getName(), nt);
+                    compound.put(subName, nt);
                 } else {
-                    throw new IOException("Unnamed tag in compound");
+                    throw new IOException("Tag inside compound is not named");
                 }
             } else {
                 ended = true;
             }
         }
 
-        return new CompoundTag(name, compound);
+        if (name == null) {
+            return new CompoundTag(compound);
+        } else {
+            CompoundTag ct = new CompoundTag();
+            ct.setCompound(name, new CompoundTag(compound));
+            return ct;
+        }
     }
 
-    private void write(Tag tag, DataOutput stream, TagRegistry registry) throws IOException {
+    private void write(String name, Tag tag, DataOutput stream, TagRegistry registry, int depth) throws IOException {
         Class<?> type = tag.getClass();
         TagSerializer<?> serializer = registry.getSerializer(type);
 
@@ -64,12 +81,16 @@ public class CompoundSerializer extends NamedTagSerializer<Map<String, NamedTag<
         }
 
         stream.writeByte(id);
-        write(tag, serializer, stream, registry);
+        if (name != null) {
+            stream.writeUTF(name);
+        }
+
+        write(tag, serializer, stream, registry, depth);
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Tag> void write(Tag tag, TagSerializer<T> serializer, DataOutput stream, TagRegistry registry) throws IOException {
-        serializer.serialize((T) tag, stream, registry, true);
+    private <T extends Tag> void write(Tag tag, TagSerializer<T> serializer, DataOutput stream, TagRegistry registry, int depth) throws IOException {
+        serializer.serialize((T) tag, stream, registry, depth + 1);
     }
 
 }

@@ -4,12 +4,12 @@ import java.util.Arrays;
 
 public class IntArrayTag extends NamedTag<int[]> {
 
-    public IntArrayTag(String name, int[] value) {
-        super(name, value);
+    public IntArrayTag(int[] value) {
+        super(value);
     }
 
     @Override
-    public String formatValue() {
+    public String toString() {
         return Arrays.toString(getValue());
     }
 

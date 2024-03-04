@@ -1,28 +1,23 @@
 package dev.tommyjs.nbt.tag;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class CompoundTag extends NamedTag<Map<String, NamedTag<?>>> {
 
-    public CompoundTag(@Nullable String name, @NotNull Map<String, NamedTag<?>> value) {
-        super(name, value);
-    }
-
-    public CompoundTag(@Nullable String name) {
-        this(name, new HashMap<>());
+    public CompoundTag(Map<String, NamedTag<?>> value) {
+        super(value);
     }
 
     public CompoundTag() {
-        this(null);
+        this(new HashMap<>());
     }
 
     @SuppressWarnings("unchecked")
     public <T> T getTag(@NotNull String name, @NotNull Class<T> clazz) {
-        NamedTag<?> tag = getValue().get(name);
+        Tag tag = getValue().get(name);
         if (tag == null) {
             return null;
         }
@@ -51,11 +46,23 @@ public class CompoundTag extends NamedTag<Map<String, NamedTag<?>>> {
     }
 
     public @NotNull CompoundTag getCompound(String name) {
-        return containsTag(name) ? getTag(name, CompoundTag.class) : new CompoundTag();
+        if (containsTag(name)) {
+            return getTag(name, CompoundTag.class);
+        } else {
+            CompoundTag tag = new CompoundTag();
+            setTag(name, tag);
+            return tag;
+        }
     }
 
     public @NotNull ListTag<?> getList(String name) {
-        return containsTag(name) ? getTag(name, ListTag.class) : new ListTag<>();
+        if (containsTag(name)) {
+            return getTag(name, ListTag.class);
+        } else {
+            ListTag<?> tag = new ListTag<>();
+            setTag(name, tag);
+            return tag;
+        }
     }
 
     public @NotNull String getString(String name) {
@@ -117,80 +124,58 @@ public class CompoundTag extends NamedTag<Map<String, NamedTag<?>>> {
     }
 
     public void setString(@NotNull String name, String data) {
-        setTag(name, new StringTag(name, data));
+        setTag(name, new StringTag(data));
     }
 
     public void setByte(@NotNull String name, byte data) {
-        setTag(name, new ByteTag(name, data));
+        setTag(name, new ByteTag(data));
     }
 
     public void setShort(@NotNull String name, short data) {
-        setTag(name, new ShortTag(name, data));
+        setTag(name, new ShortTag(data));
     }
 
     public void setInt(@NotNull String name, int data) {
-        setTag(name, new IntTag(name, data));
+        setTag(name, new IntTag(data));
     }
 
     public void setLong(@NotNull String name, long data) {
-        setTag(name, new LongTag(name, data));
+        setTag(name, new LongTag(data));
     }
 
     public void setFloat(@NotNull String name, float data) {
-        setTag(name, new FloatTag(name, data));
+        setTag(name, new FloatTag(data));
     }
 
     public void setDouble(@NotNull String name, double data) {
-        setTag(name, new DoubleTag(name, data));
+        setTag(name, new DoubleTag(data));
     }
 
     public void setByteArray(@NotNull String name, byte[] data) {
-        setTag(name, new ByteArrayTag(name, data));
+        setTag(name, new ByteArrayTag(data));
     }
 
     public void setIntArray(@NotNull String name, int[] data) {
-        setTag(name, new IntArrayTag(name, data));
+        setTag(name, new IntArrayTag(data));
     }
 
     public void setLongArray(@NotNull String name, long[] data) {
-        setTag(name, new LongArrayTag(name, data));
-    }
-
-    private String format(boolean showName) {
-        StringBuilder sb = new StringBuilder("CompoundTag{");
-        if (showName) {
-            String name = getName() == null ? "" : getName();
-            sb.append("name='").append(name).append("', {");
-        }
-
-        int i = 0;
-        for (String name : getValue().keySet()) {
-            NamedTag<?> tag = getValue().get(name);
-            String val;
-
-            if (tag instanceof CompoundTag) {
-                val = ((CompoundTag) tag).format(false);
-            } else {
-                val = tag.formatValue();
-            }
-
-            sb.append("'").append(name).append("': ").append(val);
-
-            if (i++ < getValue().size() - 1) {
-                sb.append(", ");
-            }
-        }
-
-        if (showName) {
-            sb.append("}");
-        }
-
-        return sb.toString();
+        setTag(name, new LongArrayTag(data));
     }
 
     @Override
     public String toString() {
-        return format(true);
+        StringBuilder sb = new StringBuilder("CompoundTag{");
+        int i = 0;
+        for (String name : getValue().keySet()) {
+            NamedTag<?> tag = getValue().get(name);
+            String val = tag.toString();
+            sb.append("'").append(name).append("': ").append(val);
+            if (i++ < getValue().size() - 1) {
+                sb.append(", ");
+            }
+        }
+        return sb.append("}").toString();
     }
 
 }

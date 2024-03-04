@@ -4,12 +4,12 @@ import java.util.Arrays;
 
 public class ByteArrayTag extends NamedTag<byte[]> {
 
-    public ByteArrayTag(String name, byte[] value) {
-        super(name, value);
+    public ByteArrayTag(byte[] value) {
+        super(value);
     }
 
     @Override
-    public String formatValue() {
+    public String toString() {
         return Arrays.toString(getValue());
     }
 

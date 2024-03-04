@@ -4,6 +4,7 @@ import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.EndTag;
 import dev.tommyjs.nbt.tag.ListTag;
 import dev.tommyjs.nbt.tag.Tag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -11,14 +12,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListSerializer<T extends Tag> extends NamedTagSerializer<List<T>, ListTag<T>> {
+public class ListSerializer<T extends Tag> implements TagSerializer<ListTag<T>> {
 
     @Override
-    @SuppressWarnings("unchecked")
-    public void serialize0(List<T> data, DataOutput stream, TagRegistry registry) throws IOException {
+    public void serialize(@NotNull ListTag<T> tag, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+        List<T> data = tag.getValue();
         Class<?> type = data.size() > 0 ? data.get(0).getClass() : EndTag.class;
-        TagSerializer<T> serializer = (TagSerializer<T>) registry.getSerializer(type);
 
+        //noinspection unchecked
+        TagSerializer<T> serializer = (TagSerializer<T>) registry.getSerializer(type);
         if (serializer == null) {
             throw new IOException("Tag serializer not found in registry for class " + type);
         }
@@ -31,17 +33,17 @@ public class ListSerializer<T extends Tag> extends NamedTagSerializer<List<T>, L
         stream.writeByte(id);
         stream.writeInt(data.size());
 
-        for (T tag : data) {
-            serializer.serialize(tag, stream, registry, false);
+        for (T tag1 : data) {
+            serializer.serialize(tag1, stream, registry, depth + 1);
         }
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public ListTag<T> deserialize0(String name, DataInput stream, TagRegistry registry) throws IOException {
+    public @NotNull ListTag<T> deserialize(@NotNull DataInput stream, @NotNull TagRegistry registry, int depth) throws IOException {
         int tagId = stream.readByte();
         int len = stream.readInt();
 
+        //noinspection unchecked
         TagSerializer<T> serializer = (TagSerializer<T>) registry.getDeserializer(tagId);
         if (serializer == null) {
             throw new IOException("Tag deserializer not found in registry for id " + tagId);
@@ -49,11 +51,11 @@ public class ListSerializer<T extends Tag> extends NamedTagSerializer<List<T>, L
 
         List<T> lst = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            T tag = serializer.deserialize(stream, registry, false);
+            T tag = serializer.deserialize(stream, registry, depth + 1);
             lst.add(tag);
         }
 
-        return new ListTag<>(name, lst);
+        return new ListTag<>(lst);
     }
 
 }

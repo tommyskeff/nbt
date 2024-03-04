@@ -4,12 +4,12 @@ import java.util.Arrays;
 
 public class LongArrayTag extends NamedTag<long[]> {
 
-    public LongArrayTag(String name, long[] value) {
-        super(name, value);
+    public LongArrayTag(long[] value) {
+        super(value);
     }
 
     @Override
-    public String formatValue() {
+    public String toString() {
         return Arrays.toString(getValue());
     }
 

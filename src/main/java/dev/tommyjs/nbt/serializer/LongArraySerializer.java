@@ -2,23 +2,24 @@ package dev.tommyjs.nbt.serializer;
 
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.LongArrayTag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-public class LongArraySerializer extends NamedTagSerializer<long[], LongArrayTag> {
+public class LongArraySerializer implements TagSerializer<LongArrayTag> {
 
     @Override
-    public void serialize0(long[] data, DataOutput stream, TagRegistry registry) throws IOException {
-        stream.writeInt(data.length);
-        for (long d : data) {
+    public void serialize(@NotNull LongArrayTag tag, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+        stream.writeInt(tag.getValue().length);
+        for (long d : tag.getValue()) {
             stream.writeLong(d);
         }
     }
 
     @Override
-    public LongArrayTag deserialize0(String name, DataInput stream, TagRegistry registry) throws IOException {
+    public @NotNull LongArrayTag deserialize(@NotNull DataInput stream, @NotNull TagRegistry registry, int depth) throws IOException {
         int len = stream.readInt();
         long[] data = new long[len];
 
@@ -26,7 +27,7 @@ public class LongArraySerializer extends NamedTagSerializer<long[], LongArrayTag
             data[i] = stream.readLong();
         }
 
-        return new LongArrayTag(name, data);
+        return new LongArrayTag(data);
     }
 
 }
