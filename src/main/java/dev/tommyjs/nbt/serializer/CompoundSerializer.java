@@ -1,39 +1,37 @@
 package dev.tommyjs.nbt.serializer;
 
+import dev.tommyjs.nbt.NbtOptions;
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.CompoundTag;
 import dev.tommyjs.nbt.tag.EndTag;
 import dev.tommyjs.nbt.tag.NamedTag;
 import dev.tommyjs.nbt.tag.Tag;
+import dev.tommyjs.nbt.util.NbtUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CompoundSerializer implements TagSerializer<CompoundTag> {
 
     @Override
-    public void serialize(@NotNull CompoundTag tag, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
-        if (depth == 0) {
-            stream.writeUTF("");
-        }
+    public void serialize(@NotNull CompoundTag tag, @NotNull NbtOptions options, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+        NbtUtil.checkDepth(depth, options);
 
         for (String name : tag.getValue().keySet()) {
             NamedTag<?> nt = tag.getValue().get(name);
-            write(name, nt, stream, registry, depth + 1);
+            write(name, nt, options, stream, registry, depth + 1);
         }
 
-        write(null, new EndTag(), stream, registry, depth + 1);
+        write(null, new EndTag(), options, stream, registry, depth + 1);
     }
 
     @Override
-    public @NotNull CompoundTag deserialize(@NotNull DataInput stream, @NotNull TagRegistry registry, int depth) throws IOException {
-        String name = null;
-        if (depth < 1) {
-            name = stream.readUTF();
-        }
-
+    public @NotNull CompoundTag deserialize(@NotNull DataInput stream, @NotNull NbtOptions options, @NotNull TagRegistry registry, int depth) throws IOException {
+        NbtUtil.checkDepth(depth, options);
         Map<String, NamedTag<?>> compound = new HashMap<>();
 
         boolean ended = false;
@@ -47,7 +45,7 @@ public class CompoundSerializer implements TagSerializer<CompoundTag> {
                     throw new IOException("Tag deserializer not found in registry for id " + tagId);
                 }
 
-                Tag tag = serializer.deserialize(stream, registry, depth + 1);
+                Tag tag = serializer.deserialize(stream, options, registry, depth + 1);
                 if (tag instanceof NamedTag<?> nt) {
                     compound.put(subName, nt);
                 } else {
@@ -58,16 +56,10 @@ public class CompoundSerializer implements TagSerializer<CompoundTag> {
             }
         }
 
-        if (name == null) {
-            return new CompoundTag(compound);
-        } else {
-            CompoundTag ct = new CompoundTag();
-            ct.setCompound(name, new CompoundTag(compound));
-            return ct;
-        }
+        return new CompoundTag(compound);
     }
 
-    private void write(String name, Tag tag, DataOutput stream, TagRegistry registry, int depth) throws IOException {
+    private void write(String name, Tag tag, NbtOptions options, DataOutput stream, TagRegistry registry, int depth) throws IOException {
         Class<?> type = tag.getClass();
         TagSerializer<?> serializer = registry.getSerializer(type);
 
@@ -85,12 +77,12 @@ public class CompoundSerializer implements TagSerializer<CompoundTag> {
             stream.writeUTF(name);
         }
 
-        write(tag, serializer, stream, registry, depth);
+        write(tag, options, serializer, stream, registry, depth);
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Tag> void write(Tag tag, TagSerializer<T> serializer, DataOutput stream, TagRegistry registry, int depth) throws IOException {
-        serializer.serialize((T) tag, stream, registry, depth + 1);
+    private <T extends Tag> void write(Tag tag, NbtOptions options, TagSerializer<T> serializer, DataOutput stream, TagRegistry registry, int depth) throws IOException {
+        serializer.serialize((T) tag, options, stream, registry, depth + 1);
     }
 
 }

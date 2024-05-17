@@ -1,9 +1,11 @@
 package dev.tommyjs.nbt.serializer;
 
+import dev.tommyjs.nbt.NbtOptions;
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.EndTag;
 import dev.tommyjs.nbt.tag.ListTag;
 import dev.tommyjs.nbt.tag.Tag;
+import dev.tommyjs.nbt.util.NbtUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -15,7 +17,9 @@ import java.util.List;
 public class ListSerializer<T extends Tag> implements TagSerializer<ListTag<T>> {
 
     @Override
-    public void serialize(@NotNull ListTag<T> tag, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+    public void serialize(@NotNull ListTag<T> tag, @NotNull NbtOptions options, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+        NbtUtil.checkDepth(depth, options);
+
         List<T> data = tag.getValue();
         Class<?> type = data.size() > 0 ? data.get(0).getClass() : EndTag.class;
 
@@ -34,12 +38,14 @@ public class ListSerializer<T extends Tag> implements TagSerializer<ListTag<T>> 
         stream.writeInt(data.size());
 
         for (T tag1 : data) {
-            serializer.serialize(tag1, stream, registry, depth + 1);
+            serializer.serialize(tag1, options, stream, registry, depth + 1);
         }
     }
 
     @Override
-    public @NotNull ListTag<T> deserialize(@NotNull DataInput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+    public @NotNull ListTag<T> deserialize(@NotNull DataInput stream, @NotNull NbtOptions options, @NotNull TagRegistry registry, int depth) throws IOException {
+        NbtUtil.checkDepth(depth, options);
+
         int tagId = stream.readByte();
         int len = stream.readInt();
 
@@ -51,7 +57,7 @@ public class ListSerializer<T extends Tag> implements TagSerializer<ListTag<T>> 
 
         List<T> lst = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            T tag = serializer.deserialize(stream, registry, depth + 1);
+            T tag = serializer.deserialize(stream, options, registry, depth + 1);
             lst.add(tag);
         }
 

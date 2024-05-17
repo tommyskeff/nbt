@@ -1,7 +1,9 @@
 package dev.tommyjs.nbt.serializer;
 
+import dev.tommyjs.nbt.NbtOptions;
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.IntTag;
+import dev.tommyjs.nbt.util.NbtUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -11,12 +13,14 @@ import java.io.IOException;
 public class IntSerializer implements TagSerializer<IntTag> {
 
     @Override
-    public void serialize(@NotNull IntTag tag, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+    public void serialize(@NotNull IntTag tag, @NotNull NbtOptions options, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+        NbtUtil.checkDepth(depth, options);
         stream.writeInt(tag.getValue());
     }
 
     @Override
-    public @NotNull IntTag deserialize(@NotNull DataInput stream, @NotNull TagRegistry registry, int depth) throws IOException {
+    public @NotNull IntTag deserialize(@NotNull DataInput stream, @NotNull NbtOptions options, @NotNull TagRegistry registry, int depth) throws IOException {
+        NbtUtil.checkDepth(depth, options);
         int data = stream.readInt();
         return new IntTag(data);
     }
