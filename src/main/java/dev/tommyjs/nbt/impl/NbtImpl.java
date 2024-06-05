@@ -20,14 +20,14 @@ public class NbtImpl implements NbtAPI {
     }
 
     @Override
-    public byte[] serialize(@NotNull NamedTag<?> tag, @NotNull NbtOptions options) throws IOException {
+    public byte[] serialize(@NotNull Tag tag, @NotNull NbtOptions options) throws IOException {
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         write(tag, stream, options);
         return stream.toByteArray();
     }
 
     @Override
-    public void write(@NotNull NamedTag<?> tag, @NotNull OutputStream stream1, @NotNull NbtOptions options) throws IOException {
+    public void write(@NotNull Tag tag, @NotNull OutputStream stream1, @NotNull NbtOptions options) throws IOException {
         DataOutputStream stream = new DataOutputStream(stream1);
         Class<?> clazz = tag.getClass();
 
@@ -51,25 +51,25 @@ public class NbtImpl implements NbtAPI {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Tag> void write0(NamedTag<?> tag, TagSerializer<T> serializer, DataOutputStream stream, @NotNull NbtOptions options) throws IOException {
+    private <T extends Tag> void write0(Tag tag, TagSerializer<T> serializer, DataOutputStream stream, @NotNull NbtOptions options) throws IOException {
         serializer.serialize((T) tag, options, stream, registry, 0);
     }
 
     @Override
-    public void write(@NotNull NamedTag<?> tag, @NotNull File file, @NotNull NbtOptions options) throws IOException {
+    public void write(@NotNull Tag tag, @NotNull File file, @NotNull NbtOptions options) throws IOException {
         try (FileOutputStream stream = new FileOutputStream(file)) {
             write(tag, stream, options);
         }
     }
 
     @Override
-    public @NotNull NamedTag<?> deserialize(byte[] data, @NotNull NbtOptions options) throws IOException {
+    public @NotNull Tag deserialize(byte[] data, @NotNull NbtOptions options) throws IOException {
         ByteArrayInputStream stream = new ByteArrayInputStream(data);
         return read(stream, options);
     }
 
     @Override
-    public @NotNull NamedTag<?> read(@NotNull InputStream stream1, @NotNull NbtOptions options) throws IOException {
+    public @NotNull Tag read(@NotNull InputStream stream1, @NotNull NbtOptions options) throws IOException {
         DataInputStream stream = new DataInputStream(stream1);
         int tagId = stream.read();
 
@@ -84,21 +84,17 @@ public class NbtImpl implements NbtAPI {
         }
 
         Tag tag = serializer.deserialize(stream, options, registry, 0);
-        if (!(tag instanceof NamedTag<?> nt)) {
-            throw new IOException("Root tag is not named");
-        }
-
-        if (name == null || name.isEmpty()) {
-            return nt;
+        if (name == null || name.isEmpty() || !(tag instanceof NamedTag<?> namedTag)) {
+            return tag;
         } else {
             CompoundTag result = new CompoundTag();
-            result.setTag(name, nt);
+            result.setTag(name, namedTag);
             return result;
         }
     }
 
     @Override
-    public @NotNull NamedTag<?> read(@NotNull File file, @NotNull NbtOptions options) throws IOException {
+    public @NotNull Tag read(@NotNull File file, @NotNull NbtOptions options) throws IOException {
         try (FileInputStream stream = new FileInputStream(file)) {
             return read(stream, options);
         }
