@@ -2,17 +2,18 @@ package dev.tommyjs.nbt.tag;
 
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class CompoundTag extends NamedTag<Map<String, NamedTag<?>>> {
 
     public CompoundTag(Map<String, NamedTag<?>> value) {
-        super(value);
+        super(value instanceof LinkedHashMap<String, NamedTag<?>> ? value : new LinkedHashMap<>(value));
     }
 
     public CompoundTag() {
-        this(new HashMap<>());
+        this(new LinkedHashMap<>());
     }
 
     @SuppressWarnings("unchecked")
@@ -161,6 +162,10 @@ public class CompoundTag extends NamedTag<Map<String, NamedTag<?>>> {
 
     public void setLongArray(@NotNull String name, long[] data) {
         setTag(name, new LongArrayTag(data));
+    }
+
+    @NotNull Collection<String> getKeys() {
+        return getValue().keySet();
     }
 
     @Override

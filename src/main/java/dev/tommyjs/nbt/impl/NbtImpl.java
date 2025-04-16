@@ -7,6 +7,8 @@ import dev.tommyjs.nbt.serializer.TagSerializer;
 import dev.tommyjs.nbt.tag.CompoundTag;
 import dev.tommyjs.nbt.tag.NamedTag;
 import dev.tommyjs.nbt.tag.Tag;
+import dev.tommyjs.nbt.util.NbtStats;
+import dev.tommyjs.nbt.util.NbtUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -27,8 +29,9 @@ public class NbtImpl implements NbtAPI {
     }
 
     @Override
-    public void write(@NotNull Tag tag, @NotNull OutputStream stream1, @NotNull NbtOptions options) throws IOException {
-        DataOutputStream stream = new DataOutputStream(stream1);
+    public void write(@NotNull Tag tag, @NotNull OutputStream out, @NotNull NbtOptions options) throws IOException {
+        DataOutputStream stream = new DataOutputStream(out);
+        NbtStats stats = new NbtStats(options);
         Class<?> clazz = tag.getClass();
 
         TagSerializer<? extends Tag> serializer = registry.getSerializer(clazz);
@@ -41,18 +44,21 @@ public class NbtImpl implements NbtAPI {
             throw new IOException("Tag ID not found in registry for " + clazz.getName());
         }
 
-        stream.write(tagId & 0xFF);
+        stats.attemptSize(1);
+        stream.writeByte(tagId & 0xFF);
 
         if (options.includeRootName()) {
-            stream.writeUTF("");
+            NbtUtil.attemptWriteString("", options.maxNameLength(), stream, stats);
         }
 
-        write0(tag, serializer, stream, options);
+        stats.incrementDepth();
+        write0(tag, serializer, stream, stats);
+        assert stats.depth() == 1;
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends Tag> void write0(Tag tag, TagSerializer<T> serializer, DataOutputStream stream, @NotNull NbtOptions options) throws IOException {
-        serializer.serialize((T) tag, options, stream, registry, 0);
+    private <T extends Tag> void write0(Tag tag, TagSerializer<T> serializer, DataOutputStream stream, @NotNull NbtStats stats) throws IOException {
+        serializer.serialize((T) tag, stream, registry, stats);
     }
 
     @Override
@@ -71,7 +77,10 @@ public class NbtImpl implements NbtAPI {
     @Override
     public @NotNull Tag read(@NotNull InputStream stream1, @NotNull NbtOptions options) throws IOException {
         DataInputStream stream = new DataInputStream(stream1);
-        int tagId = stream.read();
+        NbtStats stats = new NbtStats(options);
+
+        stats.attemptSize(1);
+        int tagId = stream.readByte();
 
         TagSerializer<? extends Tag> serializer = registry.getDeserializer(tagId);
         if (serializer == null) {
@@ -80,10 +89,13 @@ public class NbtImpl implements NbtAPI {
 
         String name = null;
         if (options.includeRootName()) {
-            name = stream.readUTF();
+            name = NbtUtil.attemptReadString(options.maxNameLength(), stream, stats);
         }
 
-        Tag tag = serializer.deserialize(stream, options, registry, 0);
+        stats.incrementDepth();
+        Tag tag = serializer.deserialize(stream, registry, stats);
+        assert stats.depth() == 1;
+
         if (name == null || name.isEmpty() || !(tag instanceof NamedTag<?> namedTag)) {
             return tag;
         } else {

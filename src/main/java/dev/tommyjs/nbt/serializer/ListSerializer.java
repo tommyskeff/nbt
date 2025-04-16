@@ -1,11 +1,10 @@
 package dev.tommyjs.nbt.serializer;
 
-import dev.tommyjs.nbt.NbtOptions;
 import dev.tommyjs.nbt.registry.TagRegistry;
 import dev.tommyjs.nbt.tag.EndTag;
 import dev.tommyjs.nbt.tag.ListTag;
 import dev.tommyjs.nbt.tag.Tag;
-import dev.tommyjs.nbt.util.NbtUtil;
+import dev.tommyjs.nbt.util.NbtStats;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.DataInput;
@@ -17,11 +16,11 @@ import java.util.List;
 public class ListSerializer<T extends Tag> implements TagSerializer<ListTag<T>> {
 
     @Override
-    public void serialize(@NotNull ListTag<T> tag, @NotNull NbtOptions options, @NotNull DataOutput stream, @NotNull TagRegistry registry, int depth) throws IOException {
-        NbtUtil.checkDepth(depth, options);
+    public void serialize(@NotNull ListTag<T> tag, @NotNull DataOutput stream, @NotNull TagRegistry registry, @NotNull NbtStats stats) throws IOException {
+        stats.incrementDepth();
 
         List<T> data = tag.getValue();
-        Class<?> type = data.size() > 0 ? data.get(0).getClass() : EndTag.class;
+        Class<?> type = !data.isEmpty() ? data.get(0).getClass() : EndTag.class;
 
         //noinspection unchecked
         TagSerializer<T> serializer = (TagSerializer<T>) registry.getSerializer(type);
@@ -34,18 +33,22 @@ public class ListSerializer<T extends Tag> implements TagSerializer<ListTag<T>> 
             throw new IOException("Tag serializer not found in registry for class " + type.getName());
         }
 
+        stats.attemptSize(5);
         stream.writeByte(id);
         stream.writeInt(data.size());
 
-        for (T tag1 : data) {
-            serializer.serialize(tag1, options, stream, registry, depth + 1);
+        for (T element : data) {
+            serializer.serialize(element, stream, registry, stats);
         }
+
+        stats.decrementDepth();
     }
 
     @Override
-    public @NotNull ListTag<T> deserialize(@NotNull DataInput stream, @NotNull NbtOptions options, @NotNull TagRegistry registry, int depth) throws IOException {
-        NbtUtil.checkDepth(depth, options);
+    public @NotNull ListTag<T> deserialize(@NotNull DataInput stream, @NotNull TagRegistry registry, @NotNull NbtStats stats) throws IOException {
+        stats.incrementDepth();
 
+        stats.attemptSize(5);
         int tagId = stream.readByte();
         int len = stream.readInt();
 
@@ -57,10 +60,11 @@ public class ListSerializer<T extends Tag> implements TagSerializer<ListTag<T>> 
 
         List<T> lst = new ArrayList<>();
         for (int i = 0; i < len; i++) {
-            T tag = serializer.deserialize(stream, options, registry, depth + 1);
-            lst.add(tag);
+            T element = serializer.deserialize(stream, registry, stats);
+            lst.add(element);
         }
 
+        stats.decrementDepth();
         return new ListTag<>(lst);
     }
 
